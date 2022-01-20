@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:quizzler/question.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() {
   runApp(const MaterialApp(
@@ -27,6 +30,41 @@ class quizllerApp extends StatefulWidget {
 class _quizllerAppState extends State<quizllerApp> {
   List<Widget> scoreKeeper = [];
 
+  void checkAnswer(bool userPickedAnswer) {
+    bool checkAnswer = quizBrain.gotCorrectAnswer();
+    setState(
+      () {
+        if (quizBrain.isFinished() == true) {
+          Alert(
+                  context: context,
+                  title: 'FINISHED',
+                  desc: 'You\'ve completed the test')
+              .show();
+          quizBrain.reset();
+          scoreKeeper = [];
+        } else {
+          if (checkAnswer == userPickedAnswer) {
+            scoreKeeper.add(
+              const Icon(
+                Icons.check,
+                color: Colors.green,
+              ),
+            );
+          } else {
+            scoreKeeper.add(
+              const Icon(
+                Icons.close,
+                color: Colors.red,
+              ),
+            );
+          }
+
+          quizBrain.nextQuestion();
+        }
+      },
+    );
+  }
+
   // List<String> questions = [
   //   'The computer will carry out the instructions that follow the symbol',
   //   'A program must have a main function.',
@@ -39,18 +77,6 @@ class _quizllerAppState extends State<quizllerApp> {
   //     q: 'The computer will carry out the instructions that follow the symbol',
   //     a: false);
 
-  List<Question> questionsBank = [
-    Question(
-        q: 'The computer will carry out the instructions that follow the symbol',
-        a: false),
-    Question(q: 'A program must have a main function.', a: true),
-    Question(
-        q: 'There is no limit on the size of the numbers that can be stored in the int data type.',
-        a: false)
-  ];
-
-  int questionNumber = 0;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,7 +87,7 @@ class _quizllerAppState extends State<quizllerApp> {
           flex: 5,
           child: Center(
             child: Text(
-              questionsBank[questionNumber].questionText,
+              quizBrain.gotQuestionText(),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 25,
@@ -77,32 +103,7 @@ class _quizllerAppState extends State<quizllerApp> {
             child: FlatButton(
               color: Colors.green,
               onPressed: () {
-                bool correctAnswer =
-                    questionsBank[questionNumber].questionAnswer;
-                if (correctAnswer == true) {
-                  scoreKeeper.add(
-                    const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                    ),
-                  );
-                  print('user got it right');
-                } else {
-                  scoreKeeper.add(
-                    const Icon(
-                      Icons.close,
-                      color: Colors.red,
-                    ),
-                  );
-                  print('user got it wrong');
-                }
-                setState(
-                  () {
-                    setState(() {
-                      questionNumber++;
-                    });
-                  },
-                );
+                checkAnswer(true);
               },
               child: const Text(
                 'True',
@@ -120,28 +121,7 @@ class _quizllerAppState extends State<quizllerApp> {
             child: FlatButton(
               color: Colors.red,
               onPressed: () {
-                bool correctAnswer =
-                    questionsBank[questionNumber].questionAnswer;
-                if (correctAnswer == false) {
-                  scoreKeeper.add(
-                    const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                    ),
-                  );
-                } else {
-                  scoreKeeper.add(
-                    const Icon(
-                      Icons.close,
-                      color: Colors.red,
-                    ),
-                  );
-                }
-                setState(() {
-                  setState(() {
-                    questionNumber++;
-                  });
-                });
+                checkAnswer(false);
               },
               child: const Text(
                 'False',
